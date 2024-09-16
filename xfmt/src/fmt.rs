@@ -7,7 +7,7 @@
 use std::collections::HashSet;
 
 // A node in the AST
-enum Node {
+pub enum Node {
     Text(String),
     SpaceOrLine, // Renders to space if is inside a group, renders to new line if not
     Line,        // Renders to a new line
@@ -44,9 +44,9 @@ impl Node {
 }
 
 // A grouping of nodes
-struct NodeGroup {
-    nodes: Vec<Node>, // The nodes inside the group
-    id: isize,        // The id of the group
+pub struct NodeGroup {
+    pub nodes: Vec<Node>, // The nodes inside the group
+    pub id: isize,        // The id of the group
 }
 
 // TODO Add ifwrap
