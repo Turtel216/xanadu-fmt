@@ -31,7 +31,7 @@ impl Wrap {
 }
 
 impl Node {
-    fn width(&mut self, wrapped: &[isize]) -> isize {
+    fn width(&mut self, wrapped: &HashSet<isize>) -> isize {
         match self {
             Node::Nodes(nodes) => nodes.iter_mut().map(|n| n.width(wrapped)).sum(),
             Node::Group(node_group) => node_group.nodes.iter_mut().map(|n| n.width(wrapped)).sum(),
@@ -49,6 +49,7 @@ struct NodeGroup {
     id: isize,        // The id of the group
 }
 
+// TODO Add ifwrap
 // Struct holding formatter meta data
 pub struct Generator {
     buffer: String,          // Holds formatted code
@@ -88,5 +89,50 @@ impl Generator {
         }
     }
 
-    fn node(&mut self, node: Node) -> () {}
+    fn node(&mut self, node: &mut Node, wrap: &Wrap) -> () {
+        match node {
+            Node::Nodes(nodes) => nodes.iter_mut().for_each(|n| self.node(n, wrap)),
+            Node::Group(nodes) => {
+                let width: isize = nodes.nodes.iter_mut().map(|n| n.width(&self.wrapped)).sum();
+                let wrap = if self.size + width as usize > self.max {
+                    self.wrapped.insert(nodes.id);
+                    Wrap::Enable
+                } else {
+                    Wrap::Detect
+                };
+
+                nodes.nodes.iter_mut().for_each(|n| self.node(n, &wrap));
+            }
+            Node::Text(txt) => self.text(txt.to_string(), txt.len()),
+            Node::Line => {
+                if wrap.enable() {
+                    self.new_line();
+                }
+            }
+            Node::SpaceOrLine => {
+                if wrap.enable() {
+                    self.new_line();
+                } else {
+                    self.text(' '.to_string(), 1);
+                }
+            }
+            Node::Indent(nodes) => {
+                if wrap.enable() {
+                    self.size += INDENT.len();
+                    self.indent += 1;
+                    self.buffer.push_str(INDENT);
+                    nodes.iter_mut().for_each(|n| self.node(n, wrap));
+                    self.indent -= 1;
+                } else {
+                    nodes.iter_mut().for_each(|n| self.node(n, wrap));
+                }
+            }
+        }
+    }
+}
+
+impl ToString for Generator {
+    fn to_string(&self) -> String {
+        self.buffer.to_string()
+    }
 }
