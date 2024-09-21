@@ -46,6 +46,8 @@ impl<'s> Scanner<'s> {
     }
 
     fn scan_token(&mut self) -> () {
+        self.skip_whitespace();
+
         self.start = self.current;
 
         match self.advance() {
@@ -105,10 +107,37 @@ impl<'s> Scanner<'s> {
         self.tokens.push(Token::String(value));
     }
 
+    fn skip_whitespace(&mut self) -> () {
+        while !self.is_at_end() {
+            match self.peek() {
+                ' ' | '\r' | '\t' => {
+                    self.advance();
+                }
+                '\n' => {
+                    self.advance();
+                }
+                '/' if self.peek_next() == '/' => {
+                    while self.peek() != '\n' && !self.is_at_end() {
+                        self.advance();
+                    }
+                }
+                _ => return,
+            }
+        }
+    }
     fn peek(&self) -> char {
         self.source.chars().nth(self.current).unwrap_or_else(|| {
             panic!("Out of bounce index in source string at {}", self.current);
         })
+    }
+
+    fn peek_next(&self) -> char {
+        self.source
+            .chars()
+            .nth(self.current + 1)
+            .unwrap_or_else(|| {
+                panic!("Out of bounce index in source string at {}", self.current);
+            })
     }
 
     fn advance(&mut self) -> char {
@@ -141,6 +170,36 @@ impl fmt::Display for Token {
             Token::Literal(s) => write!(f, "Literal: {}", s),
             Token::OpenBrace => write!(f, "OpenBrace"),
             Token::ClosedBrace => write!(f, "ClosedBrace"),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Scanner, Token};
+
+    #[test]
+    fn test_scan_source() {
+        let input = String::from("pink x = 1+2; overtune{ something,other}");
+        let expected_output = vec![
+            Token::Literal("pink".to_string()),
+            Token::Literal("x".to_string()),
+            Token::Operator('='),
+            Token::Literal("overtune".to_string()),
+            Token::OpenBrace,
+            Token::Literal("something".to_string()),
+            Token::Comma,
+            Token::Literal("other".to_string()),
+            Token::ClosedBrace,
+        ];
+
+        let mut scanner = Scanner::new(&input);
+        let output = scanner.scan_source();
+
+        assert_eq!(output.len(), expected_output.len());
+
+        for (index, token) in output.iter().enumerate() {
+            assert_eq!(expected_output[index], *token);
         }
     }
 }

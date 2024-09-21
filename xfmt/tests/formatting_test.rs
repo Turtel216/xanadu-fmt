@@ -13,4 +13,3 @@ fn test_formatting() {
 
     assert_eq!(output, expected_output);
 }
-
