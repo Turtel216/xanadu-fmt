@@ -123,3 +123,24 @@ impl<'s> Scanner<'s> {
         return self.source.len() == self.current;
     }
 }
+
+use std::fmt;
+
+impl fmt::Display for Token {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Token::Space => write!(f, "Space"),
+            Token::NewLine => write!(f, "NewLine"),
+            Token::Tab => write!(f, "Tab"),
+            Token::Comma => write!(f, "Comma"),
+            Token::Semicolon => write!(f, "Semicolon"),
+            Token::String(s) => write!(f, "String: {}", s),
+            Token::Class(s) => write!(f, "Class: {}", s),
+            Token::Function(s) => write!(f, "Function: {}", s),
+            Token::Operator(s) => write!(f, "Operator: {}", s),
+            Token::Literal(s) => write!(f, "Literal: {}", s),
+            Token::OpenBrace => write!(f, "OpenBrace"),
+            Token::ClosedBrace => write!(f, "ClosedBrace"),
+        }
+    }
+}

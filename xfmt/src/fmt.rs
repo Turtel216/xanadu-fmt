@@ -40,22 +40,18 @@ impl Formatter {
         match self.peek() {
             &Token::Operator(_) => self.space_out(),
             &Token::Literal(_) => self.space_out(),
-            &Token::NewLine => {
-                if self.depth != 0 {
-                    for _ in 0..=self.depth {
-                        self.advance();
-                        self.tokens.insert(self.current, Token::Tab);
-                    }
-                }
-            }
             &Token::OpenBrace => {
                 self.advance();
                 self.tokens.insert(self.current, Token::NewLine);
                 self.depth += 1;
+                for _ in 0..=self.depth - 1 {
+                    self.advance();
+                    self.tokens.insert(self.current, Token::Tab);
+                }
             }
             &Token::ClosedBrace => {
                 self.advance();
-                self.tokens.insert(self.current, Token::NewLine);
+                self.tokens.insert(self.previous, Token::NewLine);
                 self.depth -= 1;
             }
             &Token::Comma => {
@@ -103,13 +99,19 @@ impl Formatter {
 #[cfg(test)]
 mod tests {
 
+    use std::fmt::Debug;
+
     use crate::tokenizer::Token;
 
     use super::Formatter;
 
     #[test]
     fn test_update_tokens() {
-        let input = vec![Token::Operator('+'), Token::Literal("skldfj".to_string())];
+        let input = vec![
+            Token::Operator('+'),
+            Token::Literal("skldfj".to_string()),
+            Token::OpenBrace,
+        ];
 
         let expected_output = vec![
             Token::Space,
@@ -117,6 +119,9 @@ mod tests {
             Token::Space,
             Token::Literal("skldfj".to_string()),
             Token::Space,
+            Token::OpenBrace,
+            Token::NewLine,
+            Token::Tab,
         ];
 
         let mut formatter = Formatter {
@@ -130,6 +135,11 @@ mod tests {
             formatter.update_tokens();
             formatter.advance();
         }
+
+        formatter
+            .tokens
+            .iter()
+            .for_each(|token| println!("Token: {}", token));
 
         assert_eq!(formatter.tokens.len(), expected_output.len());
 
