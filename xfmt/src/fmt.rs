@@ -30,7 +30,6 @@ impl Formatter {
     pub fn format(&mut self) -> String {
         while !self.is_at_end() {
             self.update_tokens();
-            self.advance();
         }
 
         let mut builder = Builder::new(&self.tokens);
@@ -38,10 +37,8 @@ impl Formatter {
     }
 
     fn update_tokens(&mut self) -> () {
-        println!("Current: {}. Length: {}", self.current, self.tokens.len());
         match self.peek() {
             &Token::Operator(_) => self.space_out(),
-
             &Token::Literal(_) => self.space_out(),
             &Token::NewLine => {
                 if self.depth != 0 {
@@ -74,9 +71,15 @@ impl Formatter {
     }
 
     fn space_out(&mut self) -> () {
-        self.tokens.insert(self.previous, Token::Space);
-        self.advance();
-        self.tokens.insert(self.current, Token::Space);
+        if self.tokens[self.previous] == Token::Space {
+            self.advance();
+            self.tokens.insert(self.current, Token::Space);
+        } else {
+            self.tokens.insert(self.current, Token::Space);
+            self.advance();
+            self.advance();
+            self.tokens.insert(self.current, Token::Space);
+        }
     }
 
     fn advance(&mut self) -> () {
@@ -106,9 +109,15 @@ mod tests {
 
     #[test]
     fn test_update_tokens() {
-        let input = vec![Token::Operator('+')];
+        let input = vec![Token::Operator('+'), Token::Literal("skldfj".to_string())];
 
-        let expected_output = vec![Token::Space, Token::Operator('+'), Token::Space];
+        let expected_output = vec![
+            Token::Space,
+            Token::Operator('+'),
+            Token::Space,
+            Token::Literal("skldfj".to_string()),
+            Token::Space,
+        ];
 
         let mut formatter = Formatter {
             tokens: input,
@@ -117,13 +126,15 @@ mod tests {
             depth: 0,
         };
 
-        formatter.advance();
-
         while !formatter.is_at_end() {
             formatter.update_tokens();
             formatter.advance();
         }
 
         assert_eq!(formatter.tokens.len(), expected_output.len());
+
+        for (index, token) in formatter.tokens.iter().enumerate() {
+            assert_eq!(*token, expected_output[index]);
+        }
     }
 }
