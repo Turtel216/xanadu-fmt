@@ -11,6 +11,7 @@ pub struct Formatter {
     tokens: Vec<Token>,
     current: usize,
     previous: usize,
+    depth: usize,
 }
 
 impl Formatter {
@@ -22,39 +23,107 @@ impl Formatter {
             tokens: tokens.to_vec(),
             current: 0,
             previous: 0,
+            depth: 0,
         }
     }
 
     pub fn format(&mut self) -> String {
-        while self.is_at_end() {
+        while !self.is_at_end() {
             self.update_tokens();
+            self.advance();
         }
 
         let mut builder = Builder::new(&self.tokens);
-        builder.build().to_string()
+        return builder.build().to_string();
     }
 
     fn update_tokens(&mut self) -> () {
-        todo!()
+        println!("Current: {}. Length: {}", self.current, self.tokens.len());
+        match self.peek() {
+            &Token::Operator(_) => self.space_out(),
+
+            &Token::Literal(_) => self.space_out(),
+            &Token::NewLine => {
+                if self.depth != 0 {
+                    for _ in 0..=self.depth {
+                        self.advance();
+                        self.tokens.insert(self.current, Token::Tab);
+                    }
+                }
+            }
+            &Token::OpenBrace => {
+                self.advance();
+                self.tokens.insert(self.current, Token::NewLine);
+                self.depth += 1;
+            }
+            &Token::ClosedBrace => {
+                self.advance();
+                self.tokens.insert(self.current, Token::NewLine);
+                self.depth -= 1;
+            }
+            &Token::Comma => {
+                self.advance();
+                self.tokens.insert(self.current, Token::NewLine);
+            }
+            &Token::Semicolon => {
+                self.advance();
+                self.tokens.insert(self.current, Token::NewLine);
+            }
+            _ => todo!(),
+        }
     }
 
-    fn advance(&mut self) -> &Token {
-        let token: &Token = &self.tokens[self.current];
+    fn space_out(&mut self) -> () {
+        self.tokens.insert(self.previous, Token::Space);
+        self.advance();
+        self.tokens.insert(self.current, Token::Space);
+    }
+
+    fn advance(&mut self) -> () {
         self.previous = self.current;
         self.current += 1;
-
-        return token;
     }
 
-    fn peek(&mut self) -> &Token {
+    fn peek(&self) -> &Token {
         return &self.tokens[self.current];
     }
 
-    fn peek_next(&mut self) -> &Token {
+    fn peek_next(&self) -> &Token {
         return &self.tokens[self.current + 1];
     }
 
     fn is_at_end(&self) -> bool {
         self.tokens.len() == self.current
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use crate::tokenizer::Token;
+
+    use super::Formatter;
+
+    #[test]
+    fn test_update_tokens() {
+        let input = vec![Token::Operator('+')];
+
+        let expected_output = vec![Token::Space, Token::Operator('+'), Token::Space];
+
+        let mut formatter = Formatter {
+            tokens: input,
+            current: 0,
+            previous: 0,
+            depth: 0,
+        };
+
+        formatter.advance();
+
+        while !formatter.is_at_end() {
+            formatter.update_tokens();
+            formatter.advance();
+        }
+
+        assert_eq!(formatter.tokens.len(), expected_output.len());
     }
 }

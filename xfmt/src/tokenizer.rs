@@ -5,13 +5,17 @@
 #[derive(Clone)]
 pub enum Token {
     NewLine,
+    Space,
+    Tab,
+    Comma,
+    Semicolon,
     String(String),
     Class(String),
     Function(String),
     Operator(char),
     Literal(String),
     OpenBrace,
-    CloeBrace,
+    ClosedBrace,
 }
 
 pub struct Scanner<'s> {
@@ -47,6 +51,8 @@ impl<'s> Scanner<'s> {
         match self.advance() {
             '\n' => self.tokens.push(Token::NewLine),
             '"' => self.skip_string(),
+            ',' => self.tokens.push(Token::Comma),
+            ';' => self.tokens.push(Token::Semicolon),
             c if self.is_operator(c) => self.tokens.push(Token::Operator(c)),
             _ => {
                 let result = self.tokenize_literal();
@@ -84,6 +90,7 @@ impl<'s> Scanner<'s> {
             '-' => true,
             '*' => true,
             '=' => true,
+            ':' => true,
             _ => false,
         }
     }
