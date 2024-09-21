@@ -51,7 +51,7 @@ impl Formatter {
             }
             &Token::ClosedBrace => {
                 self.advance();
-                self.tokens.insert(self.previous, Token::NewLine);
+                self.tokens.insert(self.current, Token::NewLine);
                 self.depth -= 1;
             }
             &Token::Comma => {
@@ -111,6 +111,8 @@ mod tests {
             Token::Operator('+'),
             Token::Literal("skldfj".to_string()),
             Token::OpenBrace,
+            Token::Literal("a".to_string()),
+            Token::ClosedBrace,
         ];
 
         let expected_output = vec![
@@ -122,6 +124,11 @@ mod tests {
             Token::OpenBrace,
             Token::NewLine,
             Token::Tab,
+            Token::Space,
+            Token::Literal("a".to_string()),
+            Token::Space,
+            Token::ClosedBrace,
+            Token::NewLine,
         ];
 
         let mut formatter = Formatter {
