@@ -22,6 +22,51 @@ impl<'b> Builder<'b> {
     }
 
     pub fn build(&mut self) -> &String {
+        self.tokens.iter().for_each(|token| match token {
+            Token::Space => self.output_str.push(' '),
+            Token::Tab => self.output_str.push_str("   "),
+            Token::NewLine => self.output_str.push('\n'),
+            Token::Semicolon => self.output_str.push(';'),
+            Token::OpenBrace => self.output_str.push('{'),
+            Token::ClosedBrace => self.output_str.push('}'),
+            Token::Literal(s) => self.output_str.push_str(s),
+            Token::Operator(s) => self.output_str.push(*s),
+            _ => todo!(),
+        });
+
         &self.output_str
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use crate::tokenizer::Token;
+
+    use super::Builder;
+
+    #[test]
+    fn test_update_tokens() {
+        let input = vec![
+            Token::Space,
+            Token::Operator('+'),
+            Token::Space,
+            Token::Literal("b".to_string()),
+            Token::Space,
+            Token::OpenBrace,
+            Token::NewLine,
+            Token::Tab,
+            Token::Literal("a".to_string()),
+            Token::Space,
+            Token::ClosedBrace,
+            Token::NewLine,
+        ];
+
+        let mut builder = Builder::new(&input);
+        let output = builder.build();
+
+        let expected_output = " + b {\n   a }\n";
+
+        assert_eq!(output, expected_output);
     }
 }

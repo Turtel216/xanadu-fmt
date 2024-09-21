@@ -67,7 +67,7 @@ impl Formatter {
     }
 
     fn space_out(&mut self) -> () {
-        if self.tokens[self.previous] == Token::Space {
+        if self.tokens[self.previous] == Token::Space || self.tokens[self.previous] == Token::Tab {
             self.advance();
             self.tokens.insert(self.current, Token::Space);
         } else {
@@ -124,7 +124,6 @@ mod tests {
             Token::OpenBrace,
             Token::NewLine,
             Token::Tab,
-            Token::Space,
             Token::Literal("a".to_string()),
             Token::Space,
             Token::ClosedBrace,
