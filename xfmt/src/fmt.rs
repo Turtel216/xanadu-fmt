@@ -53,6 +53,7 @@ impl Formatter {
                 self.advance();
                 self.tokens.insert(self.current, Token::NewLine);
                 self.depth -= 1;
+                self.add_intendation();
             }
             &Token::Comma => {
                 self.advance();
@@ -61,6 +62,7 @@ impl Formatter {
             &Token::Semicolon => {
                 self.advance();
                 self.tokens.insert(self.current, Token::NewLine);
+                self.add_intendation();
             }
             _ => todo!(),
         }
@@ -75,6 +77,15 @@ impl Formatter {
             self.advance();
             self.advance();
             self.tokens.insert(self.current, Token::Space);
+        }
+    }
+
+    fn add_intendation(&mut self) -> () {
+        if self.depth != 0 {
+            for _ in 0..=self.depth - 1 {
+                self.advance();
+                self.tokens.insert(self.current, Token::Tab);
+            }
         }
     }
 
