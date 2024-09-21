@@ -2,9 +2,6 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
-mod builder;
-mod fmt;
-
 fn main() {
     println!("Hello, world!");
 }
