@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 
 mod builder;
+mod fmt;
 mod tokenizer;
 
 fn main() {
