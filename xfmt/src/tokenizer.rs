@@ -78,8 +78,8 @@ impl<'s> Scanner<'s> {
 
     fn is_keyword(&self, value: &str) -> Option<Token> {
         match value {
-            "overtune" => Some(Token::Class(value.to_string())),
-            "subdivision" => Some(Token::Function(value.to_string())),
+            //"overtune" => Some(Token::Class(value.to_string())),
+            //"subdivision" => Some(Token::Function(value.to_string())),
             _ => None,
         }
     }

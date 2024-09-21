@@ -56,8 +56,11 @@ impl Formatter {
                 self.add_intendation();
             }
             &Token::Comma => {
-                self.advance();
-                self.tokens.insert(self.current, Token::NewLine);
+                if self.tokens[self.previous] == Token::Space {
+                    self.tokens.remove(self.previous);
+                }
+
+                self.tokens.insert(self.current, Token::Space);
             }
             &Token::Semicolon => {
                 self.advance();
@@ -69,14 +72,18 @@ impl Formatter {
     }
 
     fn space_out(&mut self) -> () {
-        if self.tokens[self.previous] == Token::Space || self.tokens[self.previous] == Token::Tab {
-            self.advance();
-            self.tokens.insert(self.current, Token::Space);
-        } else {
-            self.tokens.insert(self.current, Token::Space);
-            self.advance();
-            self.advance();
-            self.tokens.insert(self.current, Token::Space);
+        let previous = &self.tokens[self.previous];
+        match previous {
+            Token::Space | Token::Tab | Token::NewLine => {
+                self.advance();
+                self.tokens.insert(self.current, Token::Space);
+            }
+            _ => {
+                self.tokens.insert(self.current, Token::Space);
+                self.advance();
+                self.advance();
+                self.tokens.insert(self.current, Token::Space);
+            }
         }
     }
 
@@ -124,6 +131,9 @@ mod tests {
             Token::OpenBrace,
             Token::Literal("a".to_string()),
             Token::ClosedBrace,
+            Token::Literal("a".to_string()),
+            Token::Comma,
+            Token::Literal("a".to_string()),
         ];
 
         let expected_output = vec![
@@ -139,6 +149,11 @@ mod tests {
             Token::Space,
             Token::ClosedBrace,
             Token::NewLine,
+            Token::Literal("a".to_string()),
+            Token::Comma,
+            Token::Space,
+            Token::Literal("a".to_string()),
+            Token::Space,
         ];
 
         let mut formatter = Formatter {
