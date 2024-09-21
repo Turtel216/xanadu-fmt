@@ -46,7 +46,7 @@ mod tests {
     use super::Builder;
 
     #[test]
-    fn test_update_tokens() {
+    fn test_build_output_string() {
         let input = vec![
             Token::Space,
             Token::Operator('+'),

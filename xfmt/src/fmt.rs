@@ -168,11 +168,6 @@ mod tests {
             formatter.advance();
         }
 
-        formatter
-            .tokens
-            .iter()
-            .for_each(|token| println!("Token: {}", token));
-
         assert_eq!(formatter.tokens.len(), expected_output.len());
 
         for (index, token) in formatter.tokens.iter().enumerate() {

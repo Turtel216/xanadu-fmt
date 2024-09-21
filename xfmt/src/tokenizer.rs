@@ -47,25 +47,27 @@ impl<'s> Scanner<'s> {
 
     fn scan_token(&mut self) -> () {
         self.skip_whitespace();
-
         self.start = self.current;
 
         match self.advance() {
-            '\n' => self.tokens.push(Token::NewLine),
             '"' => self.skip_string(),
+            '{' => self.tokens.push(Token::OpenBrace),
+            '}' => self.tokens.push(Token::ClosedBrace),
             ',' => self.tokens.push(Token::Comma),
             ';' => self.tokens.push(Token::Semicolon),
-            c if self.is_operator(c) => self.tokens.push(Token::Operator(c)),
-            _ => {
-                let result = self.tokenize_literal();
-
-                self.tokens.push(result);
+            c => {
+                if self.is_operator(c) {
+                    self.tokens.push(Token::Operator(c));
+                } else {
+                    let result = self.tokenize_literal();
+                    self.tokens.push(result);
+                }
             }
         };
     }
 
     fn tokenize_literal(&mut self) -> Token {
-        while self.peek().is_alphabetic() || self.peek().is_numeric() {
+        while (self.peek().is_alphabetic() || self.peek().is_numeric()) && !self.is_at_end() {
             self.advance();
         }
 
@@ -97,6 +99,7 @@ impl<'s> Scanner<'s> {
         }
     }
 
+    //TODO check for is_at_end
     fn skip_string(&mut self) -> () {
         while self.peek() != '"' {
             self.advance();
@@ -116,40 +119,30 @@ impl<'s> Scanner<'s> {
                 '\n' => {
                     self.advance();
                 }
-                '/' if self.peek_next() == '/' => {
-                    while self.peek() != '\n' && !self.is_at_end() {
-                        self.advance();
-                    }
-                }
                 _ => return,
             }
         }
     }
     fn peek(&self) -> char {
+        if self.is_at_end() {
+            return '\0';
+        }
+
         self.source.chars().nth(self.current).unwrap_or_else(|| {
             panic!("Out of bounce index in source string at {}", self.current);
         })
     }
 
-    fn peek_next(&self) -> char {
-        self.source
-            .chars()
-            .nth(self.current + 1)
-            .unwrap_or_else(|| {
-                panic!("Out of bounce index in source string at {}", self.current);
-            })
-    }
-
     fn advance(&mut self) -> char {
+        let char = self.peek();
         self.previous = self.current;
-        self.source
-            .chars()
-            .nth(self.current)
-            .unwrap_or_else(|| panic!("Out of bounce source String index at {}", self.current))
+        self.current += 1;
+
+        return char;
     }
 
-    fn is_at_end(&mut self) -> bool {
-        return self.source.len() == self.current;
+    fn is_at_end(&self) -> bool {
+        return self.current == self.source.len();
     }
 }
 
@@ -180,11 +173,15 @@ mod tests {
 
     #[test]
     fn test_scan_source() {
-        let input = String::from("pink x = 1+2; overtune{ something,other}");
+        let input = String::from("pink x = 1 + 2 ; overtune{ something , other }");
         let expected_output = vec![
             Token::Literal("pink".to_string()),
             Token::Literal("x".to_string()),
             Token::Operator('='),
+            Token::Literal("1".to_string()),
+            Token::Operator('+'),
+            Token::Literal("2".to_string()),
+            Token::Semicolon,
             Token::Literal("overtune".to_string()),
             Token::OpenBrace,
             Token::Literal("something".to_string()),
@@ -195,6 +192,10 @@ mod tests {
 
         let mut scanner = Scanner::new(&input);
         let output = scanner.scan_source();
+
+        for token in output {
+            println!("Token: {}", token);
+        }
 
         assert_eq!(output.len(), expected_output.len());
 
