@@ -193,10 +193,6 @@ mod tests {
         let mut scanner = Scanner::new(&input);
         let output = scanner.scan_source();
 
-        for token in output {
-            println!("Token: {}", token);
-        }
-
         assert_eq!(output.len(), expected_output.len());
 
         for (index, token) in output.iter().enumerate() {

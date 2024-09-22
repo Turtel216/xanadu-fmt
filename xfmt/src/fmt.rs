@@ -30,6 +30,7 @@ impl Formatter {
     pub fn format(&mut self) -> String {
         while !self.is_at_end() {
             self.update_tokens();
+            self.advance();
         }
 
         let mut builder = Builder::new(&self.tokens);
@@ -50,9 +51,13 @@ impl Formatter {
                 }
             }
             &Token::ClosedBrace => {
-                self.advance();
                 self.tokens.insert(self.current, Token::NewLine);
-                self.depth -= 1;
+                self.advance();
+
+                if self.depth > 0 {
+                    self.depth -= 1;
+                }
+
                 self.add_intendation();
             }
             &Token::Comma => {
@@ -97,7 +102,7 @@ impl Formatter {
 
     fn add_intendation(&mut self) -> () {
         if self.depth != 0 {
-            for _ in 0..=self.depth - 1 {
+            for _ in 0..=self.depth {
                 self.advance();
                 self.tokens.insert(self.current, Token::Tab);
             }
@@ -125,8 +130,6 @@ impl Formatter {
 #[cfg(test)]
 mod tests {
 
-    use std::fmt::Debug;
-
     use crate::tokenizer::Token;
 
     use super::Formatter;
@@ -138,6 +141,10 @@ mod tests {
             Token::Operator('='),
             Token::Literal("a".to_string()),
             Token::Semicolon,
+            Token::Literal("a".to_string()),
+            Token::OpenBrace,
+            Token::Literal("a".to_string()),
+            Token::ClosedBrace,
         ];
 
         let expected_output = vec![
@@ -149,6 +156,15 @@ mod tests {
             Token::Literal("a".to_string()),
             Token::Semicolon,
             Token::NewLine,
+            Token::Literal("a".to_string()),
+            Token::Space,
+            Token::OpenBrace,
+            Token::NewLine,
+            Token::Tab,
+            Token::Literal("a".to_string()),
+            Token::Space,
+            Token::NewLine,
+            Token::ClosedBrace,
         ];
 
         let mut formatter = Formatter {

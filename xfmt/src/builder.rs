@@ -52,9 +52,11 @@ mod tests {
     fn test_build_output_string() {
         let input = vec![
             Token::Space,
+            Token::Literal("a".to_string()),
+            Token::Space,
             Token::Operator('+'),
             Token::Space,
-            Token::Literal("b".to_string()),
+            Token::Literal("a".to_string()),
             Token::Space,
             Token::OpenBrace,
             Token::NewLine,
@@ -68,7 +70,7 @@ mod tests {
         let mut builder = Builder::new(&input);
         let output = builder.build();
 
-        let expected_output = " + b {\n   a }\n";
+        let expected_output = " a + a {\n   a }\n";
 
         assert_eq!(output, expected_output);
     }
