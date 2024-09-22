@@ -7,11 +7,14 @@ use crate::{
     tokenizer::{Scanner, Token},
 };
 
+const MAX_COL: u8 = 14;
+
 pub struct Formatter {
     tokens: Vec<Token>,
     current: usize,
     previous: usize,
     depth: usize,
+    col: u8,
 }
 
 impl Formatter {
@@ -24,6 +27,7 @@ impl Formatter {
             current: 0,
             previous: 0,
             depth: 0,
+            col: 0,
         }
     }
 
@@ -38,12 +42,23 @@ impl Formatter {
     }
 
     fn update_tokens(&mut self) -> () {
+        if self.col > MAX_COL {
+            self.depth += 1;
+            self.new_line();
+            for _ in 0..=self.depth - 1 {
+                self.advance();
+                self.tokens.insert(self.current, Token::Tab);
+            }
+            self.depth -= 1;
+            self.advance();
+        }
+
         match self.peek() {
             &Token::Operator(_) => self.space_out(),
             &Token::Literal(_) => self.space_out(),
             &Token::OpenBrace => {
                 self.advance();
-                self.tokens.insert(self.current, Token::NewLine);
+                self.new_line();
                 self.depth += 1;
                 for _ in 0..=self.depth - 1 {
                     self.advance();
@@ -51,7 +66,7 @@ impl Formatter {
                 }
             }
             &Token::ClosedBrace => {
-                self.tokens.insert(self.current, Token::NewLine);
+                self.new_line();
                 self.advance();
 
                 if self.depth > 0 {
@@ -74,7 +89,7 @@ impl Formatter {
                     self.current -= 1;
                 }
                 self.advance();
-                self.tokens.insert(self.current, Token::NewLine);
+                self.new_line();
                 self.add_intendation();
             }
             &Token::Space => self.advance(),
@@ -106,6 +121,11 @@ impl Formatter {
         }
     }
 
+    fn new_line(&mut self) -> () {
+        self.tokens.insert(self.current, Token::NewLine);
+        self.col = 0;
+    }
+
     fn add_intendation(&mut self) -> () {
         if self.depth != 0 {
             for _ in 0..=self.depth {
@@ -118,6 +138,7 @@ impl Formatter {
     fn advance(&mut self) -> () {
         self.previous = self.current;
         self.current += 1;
+        self.col += 1;
     }
 
     fn peek(&self) -> &Token {
@@ -177,6 +198,69 @@ mod tests {
             current: 0,
             previous: 0,
             depth: 0,
+            col: 0,
+        };
+
+        while !formatter.is_at_end() {
+            formatter.update_tokens();
+            formatter.advance();
+        }
+
+        assert_eq!(formatter.tokens.len(), expected_output.len());
+
+        for (index, token) in formatter.tokens.iter().enumerate() {
+            assert_eq!(*token, expected_output[index]);
+        }
+    }
+
+    #[test]
+    fn test_max_col() {
+        let input = vec![
+            Token::Literal("a".to_string()),
+            Token::Literal("a".to_string()),
+            Token::Literal("a".to_string()),
+            Token::Literal("a".to_string()),
+            Token::Literal("a".to_string()),
+            Token::Literal("a".to_string()),
+            Token::Literal("a".to_string()),
+            Token::Literal("a".to_string()),
+            Token::Literal("a".to_string()),
+            Token::Semicolon,
+            Token::Literal("a".to_string()),
+        ];
+
+        let expected_output = vec![
+            Token::Literal("a".to_string()),
+            Token::Space,
+            Token::Literal("a".to_string()),
+            Token::Space,
+            Token::Literal("a".to_string()),
+            Token::Space,
+            Token::Literal("a".to_string()),
+            Token::Space,
+            Token::Literal("a".to_string()),
+            Token::Space,
+            Token::Literal("a".to_string()),
+            Token::Space,
+            Token::Literal("a".to_string()),
+            Token::Space,
+            Token::Literal("a".to_string()),
+            Token::Space,
+            Token::NewLine,
+            Token::Tab,
+            Token::Literal("a".to_string()),
+            Token::Semicolon,
+            Token::NewLine,
+            Token::Literal("a".to_string()),
+            Token::Space,
+        ];
+
+        let mut formatter = Formatter {
+            tokens: input,
+            current: 0,
+            previous: 0,
+            depth: 0,
+            col: 0,
         };
 
         while !formatter.is_at_end() {
