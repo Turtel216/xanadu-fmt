@@ -15,3 +15,15 @@ fn test_formatting() {
 
     assert_eq!(output, expected_output);
 }
+
+#[test]
+fn test_wrapping() {
+    let input = String::from("name name name name name name name name name\0");
+    let expected_output = String::from("name name name name name name name name \n   name ");
+    let mut formatter = Formatter::new(&input);
+    let output = formatter.format();
+
+    println!("Output string: {}", output);
+
+    assert_eq!(output, expected_output);
+}
