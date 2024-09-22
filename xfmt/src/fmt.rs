@@ -85,6 +85,12 @@ impl Formatter {
     }
 
     fn space_out(&mut self) -> () {
+        if self.previous == self.current {
+            self.advance();
+            self.tokens.insert(self.current, Token::Space);
+            return;
+        }
+
         let previous = &self.tokens[self.previous];
         match previous {
             Token::Space | Token::Tab | Token::NewLine => {
@@ -148,7 +154,6 @@ mod tests {
         ];
 
         let expected_output = vec![
-            Token::Space,
             Token::Literal("a".to_string()),
             Token::Space,
             Token::Operator('='),
