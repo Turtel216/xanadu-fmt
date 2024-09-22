@@ -75,6 +75,17 @@ impl Formatter {
 
                 self.add_intendation();
             }
+            &Token::OpenParen => {
+                if self.tokens[self.previous] == Token::Space {
+                    self.tokens.remove(self.previous);
+                }
+            }
+            &Token::ClosedParen => {
+                if self.tokens[self.previous] == Token::Space {
+                    self.tokens.remove(self.previous);
+                }
+                self.tokens.insert(self.current, Token::Space);
+            }
             &Token::Comma => {
                 if self.tokens[self.previous] == Token::Space {
                     self.tokens.remove(self.previous);
@@ -108,7 +119,7 @@ impl Formatter {
 
         let previous = &self.tokens[self.previous];
         match previous {
-            Token::Space | Token::Tab | Token::NewLine => {
+            Token::Space | Token::Tab | Token::NewLine | Token::OpenParen => {
                 self.advance();
                 self.tokens.insert(self.current, Token::Space);
             }
@@ -165,6 +176,9 @@ mod tests {
             Token::Literal("a".to_string()),
             Token::Semicolon,
             Token::Literal("a".to_string()),
+            Token::OpenParen,
+            Token::Literal("a".to_string()),
+            Token::ClosedParen,
             Token::OpenBrace,
             Token::Literal("a".to_string()),
             Token::ClosedBrace,
@@ -179,6 +193,9 @@ mod tests {
             Token::Semicolon,
             Token::NewLine,
             Token::Literal("a".to_string()),
+            Token::OpenParen,
+            Token::Literal("a".to_string()),
+            Token::ClosedParen,
             Token::Space,
             Token::OpenBrace,
             Token::NewLine,
@@ -200,6 +217,10 @@ mod tests {
         while !formatter.is_at_end() {
             formatter.update_tokens();
             formatter.advance();
+        }
+
+        for token in &formatter.tokens {
+            println!("Token: {}", token);
         }
 
         assert_eq!(formatter.tokens.len(), expected_output.len());
@@ -262,10 +283,6 @@ mod tests {
         while !formatter.is_at_end() {
             formatter.update_tokens();
             formatter.advance();
-        }
-
-        for token in &formatter.tokens {
-            println!("Token: {}", token);
         }
 
         assert_eq!(formatter.tokens.len(), expected_output.len());

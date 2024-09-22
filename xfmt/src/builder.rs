@@ -28,6 +28,8 @@ impl<'b> Builder<'b> {
             Token::Semicolon => self.output_str.push(';'),
             Token::OpenBrace => self.output_str.push('{'),
             Token::ClosedBrace => self.output_str.push('}'),
+            Token::OpenParen => self.output_str.push('('),
+            Token::ClosedParen => self.output_str.push(')'),
             Token::Literal(s) => self.output_str.push_str(s),
             Token::Operator(s) => self.output_str.push(*s),
             t => panic!("{} is not implemented", t),
@@ -61,12 +63,15 @@ mod tests {
             Token::Space,
             Token::ClosedBrace,
             Token::NewLine,
+            Token::Literal("a".to_string()),
+            Token::OpenParen,
+            Token::ClosedParen,
         ];
 
         let mut builder = Builder::new(&input);
         let output = builder.build();
 
-        let expected_output = " a + a {\n   a }\n";
+        let expected_output = " a + a {\n   a }\na()";
 
         assert_eq!(output, expected_output);
     }

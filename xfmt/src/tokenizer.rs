@@ -14,6 +14,8 @@ pub enum Token {
     Literal(String),
     OpenBrace,
     ClosedBrace,
+    OpenParen,
+    ClosedParen,
 }
 
 pub struct Scanner<'s> {
@@ -51,6 +53,8 @@ impl<'s> Scanner<'s> {
             '"' => self.skip_string(),
             '{' => self.tokens.push(Token::OpenBrace),
             '}' => self.tokens.push(Token::ClosedBrace),
+            '(' => self.tokens.push(Token::OpenParen),
+            ')' => self.tokens.push(Token::ClosedParen),
             ',' => self.tokens.push(Token::Comma),
             ';' => self.tokens.push(Token::Semicolon),
             c => {
@@ -157,6 +161,8 @@ impl fmt::Display for Token {
             Token::String(s) => write!(f, "String: {}", s),
             Token::Operator(s) => write!(f, "Operator: {}", s),
             Token::Literal(s) => write!(f, "Literal: {}", s),
+            Token::OpenParen => write!(f, "OpenParen"),
+            Token::ClosedParen => write!(f, "ClosedParen"),
             Token::OpenBrace => write!(f, "OpenBrace"),
             Token::ClosedBrace => write!(f, "ClosedBrace"),
         }
@@ -169,7 +175,7 @@ mod tests {
 
     #[test]
     fn test_scan_source() {
-        let input = String::from("pink x =1+2 ; overtune{ something , other }\0");
+        let input = String::from("pink x =1+2 ; overtune{ something(1, 2)  other }\0");
         let expected_output = vec![
             Token::Literal("pink".to_string()),
             Token::Literal("x".to_string()),
@@ -181,7 +187,11 @@ mod tests {
             Token::Literal("overtune".to_string()),
             Token::OpenBrace,
             Token::Literal("something".to_string()),
+            Token::OpenParen,
+            Token::Literal("1".to_string()),
             Token::Comma,
+            Token::Literal("2".to_string()),
+            Token::ClosedParen,
             Token::Literal("other".to_string()),
             Token::ClosedBrace,
         ];
