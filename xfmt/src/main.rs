@@ -8,12 +8,5 @@ use xfmt::format_file;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-
-    if args.len() == 1 {
-        println!("Eror");
-    } else if args.len() == 2 {
-        format_file(&args[1]);
-    } else {
-        println!("Usage: xfmt [path]");
-    }
+    format_file(&args[1]);
 }

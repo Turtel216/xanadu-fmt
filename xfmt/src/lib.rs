@@ -29,10 +29,10 @@ pub fn format_file(path: &String) -> () {
 }
 
 fn write_to_file(path: &String, code: &String) -> () {
-    let mut file = match File::open(path) {
+    let mut file = match File::create(path) {
         Ok(s) => s,
         Err(e) => {
-            eprint!("Unable to write to file {}: {}", path, e);
+            eprint!("Unable to open file {}: {}", path, e);
             process::exit(74);
         }
     };
@@ -40,7 +40,7 @@ fn write_to_file(path: &String, code: &String) -> () {
     match file.write_all(code.as_bytes()) {
         Ok(_) => (),
         Err(e) => {
-            eprint!("Unable to read file {}: {}", path, e);
+            eprint!("Unable to write to file {}: {}", path, e);
             process::exit(74);
         }
     }
