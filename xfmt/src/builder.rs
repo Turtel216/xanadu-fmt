@@ -8,8 +8,6 @@ const TAB_SISE: &str = "   ";
 
 pub struct Builder<'b> {
     tokens: &'b Vec<Token>,
-    current: usize,
-    previous: usize,
     output_str: String,
 }
 
@@ -17,8 +15,6 @@ impl<'b> Builder<'b> {
     pub fn new(tokens: &'b Vec<Token>) -> Self {
         Self {
             tokens,
-            current: 0,
-            previous: 0,
             output_str: String::new(),
         }
     }

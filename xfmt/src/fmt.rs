@@ -145,10 +145,6 @@ impl Formatter {
         return &self.tokens[self.current];
     }
 
-    fn peek_next(&self) -> &Token {
-        return &self.tokens[self.current + 1];
-    }
-
     fn is_at_end(&self) -> bool {
         self.tokens.len() == self.current
     }
