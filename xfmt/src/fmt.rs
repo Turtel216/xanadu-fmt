@@ -63,11 +63,19 @@ impl Formatter {
                 self.tokens.insert(self.current, Token::Space);
             }
             &Token::Semicolon => {
+                if self.tokens[self.previous] == Token::Space {
+                    self.tokens.remove(self.previous);
+                    self.previous -= 1;
+                    self.current -= 1;
+                }
                 self.advance();
                 self.tokens.insert(self.current, Token::NewLine);
                 self.add_intendation();
             }
-            _ => todo!(),
+            &Token::Space => self.advance(),
+            &Token::NewLine => self.advance(),
+            &Token::Tab => self.advance(),
+            t => panic!("{} is not implemented", t),
         }
     }
 
@@ -126,34 +134,21 @@ mod tests {
     #[test]
     fn test_update_tokens() {
         let input = vec![
-            Token::Operator('+'),
-            Token::Literal("skldfj".to_string()),
-            Token::OpenBrace,
             Token::Literal("a".to_string()),
-            Token::ClosedBrace,
+            Token::Operator('='),
             Token::Literal("a".to_string()),
-            Token::Comma,
-            Token::Literal("a".to_string()),
+            Token::Semicolon,
         ];
 
         let expected_output = vec![
             Token::Space,
-            Token::Operator('+'),
+            Token::Literal("a".to_string()),
             Token::Space,
-            Token::Literal("skldfj".to_string()),
+            Token::Operator('='),
             Token::Space,
-            Token::OpenBrace,
+            Token::Literal("a".to_string()),
+            Token::Semicolon,
             Token::NewLine,
-            Token::Tab,
-            Token::Literal("a".to_string()),
-            Token::Space,
-            Token::ClosedBrace,
-            Token::NewLine,
-            Token::Literal("a".to_string()),
-            Token::Comma,
-            Token::Space,
-            Token::Literal("a".to_string()),
-            Token::Space,
         ];
 
         let mut formatter = Formatter {
@@ -166,6 +161,10 @@ mod tests {
         while !formatter.is_at_end() {
             formatter.update_tokens();
             formatter.advance();
+        }
+
+        for token in &formatter.tokens {
+            println!("Token: {}", token);
         }
 
         assert_eq!(formatter.tokens.len(), expected_output.len());

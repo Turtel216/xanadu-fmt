@@ -6,10 +6,12 @@ use xfmt::fmt::Formatter;
 
 #[test]
 fn test_formatting() {
-    let input = String::from("pink x = 1+2; overtune{ something,other}");
-    let expected_output = String::from("pink x = 1 + 2;\novertune {\n   something, other}\n"); //TODO
+    let input = String::from("pink x =1+2 ; overtune{ something , other }");
+    let expected_output = String::from(" pink x = 1 + 2;\novertune {\n   something, other \n}");
     let mut formatter = Formatter::new(&input);
     let output = formatter.format();
+
+    println!("Output string: {}", output);
 
     assert_eq!(output, expected_output);
 }

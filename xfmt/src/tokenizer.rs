@@ -173,7 +173,7 @@ mod tests {
 
     #[test]
     fn test_scan_source() {
-        let input = String::from("pink x = 1 + 2 ; overtune{ something , other }");
+        let input = String::from("pink x =1+2 ; overtune{ something , other }");
         let expected_output = vec![
             Token::Literal("pink".to_string()),
             Token::Literal("x".to_string()),

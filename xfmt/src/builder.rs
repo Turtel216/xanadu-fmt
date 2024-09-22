@@ -4,6 +4,8 @@
 
 use crate::tokenizer::Token;
 
+const TAB_SISE: &str = "   ";
+
 pub struct Builder<'b> {
     tokens: &'b Vec<Token>,
     current: usize,
@@ -24,14 +26,15 @@ impl<'b> Builder<'b> {
     pub fn build(&mut self) -> &String {
         self.tokens.iter().for_each(|token| match token {
             Token::Space => self.output_str.push(' '),
-            Token::Tab => self.output_str.push_str("   "),
+            Token::Comma => self.output_str.push(','),
+            Token::Tab => self.output_str.push_str(TAB_SISE),
             Token::NewLine => self.output_str.push('\n'),
             Token::Semicolon => self.output_str.push(';'),
             Token::OpenBrace => self.output_str.push('{'),
             Token::ClosedBrace => self.output_str.push('}'),
             Token::Literal(s) => self.output_str.push_str(s),
             Token::Operator(s) => self.output_str.push(*s),
-            _ => todo!(),
+            t => panic!("{} is not implemented", t),
         });
 
         &self.output_str
