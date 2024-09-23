@@ -45,10 +45,8 @@ impl Formatter {
         if self.col > MAX_COL {
             self.depth += 1;
             self.new_line();
-            for _ in 0..=self.depth - 1 {
-                self.advance();
-                self.tokens.insert(self.current, Token::Tab);
-            }
+            self.add_intendation();
+
             self.depth -= 1;
             self.advance();
         }
@@ -60,10 +58,7 @@ impl Formatter {
                 self.advance();
                 self.new_line();
                 self.depth += 1;
-                for _ in 0..=self.depth - 1 {
-                    self.advance();
-                    self.tokens.insert(self.current, Token::Tab);
-                }
+                self.add_intendation();
             }
             &Token::ClosedBrace => {
                 self.new_line();
@@ -139,7 +134,7 @@ impl Formatter {
 
     fn add_intendation(&mut self) -> () {
         if self.depth != 0 {
-            for _ in 0..=self.depth {
+            for _ in 0..=self.depth - 1 {
                 self.advance();
                 self.tokens.insert(self.current, Token::Tab);
             }
