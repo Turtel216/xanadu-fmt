@@ -4,7 +4,7 @@
 
 use crate::tokenizer::Token;
 
-const TAB_SISE: &str = "   ";
+const TAB_SIZE: &str = "   ";
 
 pub struct Builder<'b> {
     tokens: &'b Vec<Token>,
@@ -23,7 +23,7 @@ impl<'b> Builder<'b> {
         self.tokens.iter().for_each(|token| match token {
             Token::Space => self.output_str.push(' '),
             Token::Comma => self.output_str.push(','),
-            Token::Tab => self.output_str.push_str(TAB_SISE),
+            Token::Tab => self.output_str.push_str(TAB_SIZE),
             Token::NewLine => self.output_str.push('\n'),
             Token::Semicolon => self.output_str.push(';'),
             Token::OpenBrace => self.output_str.push('{'),
